@@ -224,6 +224,12 @@
             background: #b91c1c;
         }
 
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            gap: 4px;
+        }
+
         .sentences-section {
             flex: 3;
             padding: 20px;
@@ -481,6 +487,30 @@
             border-bottom-color: var(--primary);
         }
 
+        .template-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .template-tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .template-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
         .tab-content {
             display: none;
         }
@@ -584,6 +614,67 @@
 
         .add-template-btn:hover {
             background: var(--primary-dark);
+        }
+
+        .add-sentence-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-top: 15px;
+            transition: var(--transition);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-sentence-btn:hover {
+            background: #047857;
+        }
+
+        .sentence-edit-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .sentence-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .sentence-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .delete-sentence-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            min-width: 40px;
+        }
+
+        .delete-sentence-btn:hover {
+            background: #b91c1c;
         }
 
         .modal-actions {
@@ -701,6 +792,11 @@
                 </div>
 
                 <div id="sentencesTab" class="tab-content">
+                    <div class="template-tabs">
+                        <button class="template-tab-btn active" onclick="switchTemplateTab(1)">Template 1 Zinnen</button>
+                        <button class="template-tab-btn" onclick="switchTemplateTab(2)">Template 2 Zinnen</button>
+                    </div>
+                    
                     <div id="sentencesEditContainer"></div>
                 </div>
             </div>
@@ -777,6 +873,7 @@
         let selectedOpening = null;
         let currentTemplateId = null;
         let draggedSentence = null;
+        let currentTemplateTab = 1; // Voor de zinnen tabs in instellingen
 
         function loadData() {
             try {
@@ -1222,6 +1319,142 @@
             container.focus();
         }
 
+        // ============ NIEUWE FUNCTIES VOOR INSTELLINGEN ============
+        function switchTemplateTab(templateId) {
+            currentTemplateTab = templateId;
+            document.querySelectorAll('.template-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadSentencesEditData();
+        }
+
+        function addSentence() {
+            const templateId = currentTemplateTab;
+            if (!templates[templateId].sentences) {
+                templates[templateId].sentences = [];
+            }
+            templates[templateId].sentences.push('');
+            loadSentencesEditData();
+        }
+
+        function addAppointment() {
+            if (!templates[2].appointments) {
+                templates[2].appointments = [];
+            }
+            templates[2].appointments.push('');
+            loadSentencesEditData();
+        }
+
+        function deleteSentence(index) {
+            const templateId = currentTemplateTab;
+            if (confirm('Weet je zeker dat je deze zin wilt verwijderen?')) {
+                templates[templateId].sentences.splice(index, 1);
+                loadSentencesEditData();
+            }
+        }
+
+        function deleteAppointment(index) {
+            if (confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
+                templates[2].appointments.splice(index, 1);
+                loadSentencesEditData();
+            }
+        }
+
+        function loadSentencesEditData() {
+            const container = document.getElementById('sentencesEditContainer');
+            container.innerHTML = '';
+            
+            const templateId = currentTemplateTab;
+            
+            if (templateId == 1) {
+                // Template 1 zinnen
+                const title = document.createElement('h3');
+                title.textContent = 'Template 1 - Behandelplan ouders';
+                title.style.marginBottom = '15px';
+                title.style.color = 'var(--dark)';
+                container.appendChild(title);
+                
+                if (templates[1].sentences && templates[1].sentences.length > 0) {
+                    templates[1].sentences.forEach((sentence, index) => {
+                        const sentenceDiv = document.createElement('div');
+                        sentenceDiv.className = 'sentence-edit-item';
+                        sentenceDiv.innerHTML = `
+                            <input type="text" class="sentence-input" id="template1-sentence-${index}" value="${sentence}" placeholder="Voer voorbeeldzin in...">
+                            <button class="delete-sentence-btn" onclick="deleteSentence(${index})">🗑️</button>
+                        `;
+                        container.appendChild(sentenceDiv);
+                    });
+                }
+                
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-sentence-btn';
+                addBtn.innerHTML = '➕ Nieuwe zin toevoegen';
+                addBtn.onclick = addSentence;
+                container.appendChild(addBtn);
+                
+            } else if (templateId == 2) {
+                // Template 2 zinnen
+                const title = document.createElement('h3');
+                title.textContent = 'Template 2 - Verslag eerste consult';
+                title.style.marginBottom = '15px';
+                title.style.color = 'var(--dark)';
+                container.appendChild(title);
+                
+                // Zinnen sectie
+                const sentencesTitle = document.createElement('h4');
+                sentencesTitle.textContent = 'Voorbeeldzinnen:';
+                sentencesTitle.style.margin = '15px 0 10px 0';
+                sentencesTitle.style.color = 'var(--gray)';
+                container.appendChild(sentencesTitle);
+                
+                if (templates[2].sentences && templates[2].sentences.length > 0) {
+                    templates[2].sentences.forEach((sentence, index) => {
+                        const sentenceDiv = document.createElement('div');
+                        sentenceDiv.className = 'sentence-edit-item';
+                        sentenceDiv.innerHTML = `
+                            <input type="text" class="sentence-input" id="template2-sentence-${index}" value="${sentence}" placeholder="Voer voorbeeldzin in...">
+                            <button class="delete-sentence-btn" onclick="deleteSentence(${index})">🗑️</button>
+                        `;
+                        container.appendChild(sentenceDiv);
+                    });
+                }
+                
+                const addSentenceBtn = document.createElement('button');
+                addSentenceBtn.className = 'add-sentence-btn';
+                addSentenceBtn.innerHTML = '➕ Nieuwe zin toevoegen';
+                addSentenceBtn.onclick = addSentence;
+                container.appendChild(addSentenceBtn);
+                
+                // Afspraken sectie
+                const appointmentsTitle = document.createElement('h4');
+                appointmentsTitle.textContent = 'Optionele afspraken:';
+                appointmentsTitle.style.margin = '25px 0 10px 0';
+                appointmentsTitle.style.color = 'var(--gray)';
+                container.appendChild(appointmentsTitle);
+                
+                if (templates[2].appointments && templates[2].appointments.length > 0) {
+                    templates[2].appointments.forEach((appointment, index) => {
+                        const appointmentDiv = document.createElement('div');
+                        appointmentDiv.className = 'sentence-edit-item';
+                        appointmentDiv.innerHTML = `
+                            <input type="text" class="sentence-input" id="template2-appointment-${index}" value="${appointment}" placeholder="Voer afspraak in...">
+                            <button class="delete-sentence-btn" onclick="deleteAppointment(${index})">🗑️</button>
+                        `;
+                        container.appendChild(appointmentDiv);
+                    });
+                }
+                
+                const addAppointmentBtn = document.createElement('button');
+                addAppointmentBtn.className = 'add-sentence-btn';
+                addAppointmentBtn.innerHTML = '➕ Nieuwe afspraak toevoegen';
+                addAppointmentBtn.onclick = addAppointment;
+                container.appendChild(addAppointmentBtn);
+            }
+        }
+
+        // ============ EINDE NIEUWE FUNCTIES ============
+
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             loadDropdownTemplates();
@@ -1300,6 +1533,10 @@
             
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            if (tabName === 'sentences') {
+                loadSentencesEditData();
+            }
         }
 
         function loadSettingsData() {
@@ -1317,7 +1554,7 @@
                     templateContent = `
                         <div class="template-header">
                             <div class="template-title">Template ${id} - ${template.name}</div>
-                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteTemplate(${id})">🗑️</button>
                         </div>
                         <label class="edit-label">Template Naam</label>
                         <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
@@ -1327,70 +1564,24 @@
                         
                         <label class="edit-label">Opening 2 (beugelplan)</label>
                         <input type="text" class="edit-input" id="template-opening-beugelplan-${id}" value="${template.openings.beugelplan}">
-                        
-                        <label class="edit-label">Voorbeeldzinnen Template 1</label>
-                        <div id="template1-sentences-container"></div>
                     `;
-                    
-                    setTimeout(() => {
-                        const container = document.getElementById('template1-sentences-container');
-                        container.innerHTML = '';
-                        templates[1].sentences.forEach((sentence, index) => {
-                            const sentenceDiv = document.createElement('div');
-                            sentenceDiv.style.marginBottom = '10px';
-                            sentenceDiv.innerHTML = `
-                                <input type="text" class="edit-input" id="template1-sentence-${index}" value="${sentence}" style="margin-bottom: 5px;">
-                            `;
-                            container.appendChild(sentenceDiv);
-                        });
-                    }, 0);
                     
                 } else if (id == 2) {
                     templateContent = `
                         <div class="template-header">
                             <div class="template-title">Template ${id} - ${template.name}</div>
-                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteTemplate(${id})">🗑️</button>
                         </div>
                         <label class="edit-label">Template Naam</label>
                         <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
                         <label class="edit-label">Template Inhoud</label>
                         <textarea class="edit-textarea" id="template-${id}">${template.content}</textarea>
-                        
-                        <label class="edit-label">Voorbeeldzinnen Template 2</label>
-                        <div id="template2-sentences-container"></div>
-                        
-                        <label class="edit-label">Optionele Afspraken</label>
-                        <div id="template2-appointments-container"></div>
                     `;
-                    
-                    setTimeout(() => {
-                        const sentencesContainer = document.getElementById('template2-sentences-container');
-                        sentencesContainer.innerHTML = '';
-                        templates[2].sentences.forEach((sentence, index) => {
-                            const sentenceDiv = document.createElement('div');
-                            sentenceDiv.style.marginBottom = '10px';
-                            sentenceDiv.innerHTML = `
-                                <input type="text" class="edit-input" id="template2-sentence-${index}" value="${sentence}" style="margin-bottom: 5px;">
-                            `;
-                            sentencesContainer.appendChild(sentenceDiv);
-                        });
-                        
-                        const appointmentsContainer = document.getElementById('template2-appointments-container');
-                        appointmentsContainer.innerHTML = '';
-                        templates[2].appointments.forEach((appointment, index) => {
-                            const appointmentDiv = document.createElement('div');
-                            appointmentDiv.style.marginBottom = '10px';
-                            appointmentDiv.innerHTML = `
-                                <input type="text" class="edit-input" id="template2-appointment-${index}" value="${appointment}" style="margin-bottom: 5px;">
-                            `;
-                            appointmentsContainer.appendChild(appointmentDiv);
-                        });
-                    }, 0);
                 } else {
                     templateContent = `
                         <div class="template-header">
                             <div class="template-title">Template ${id} - ${template.name}</div>
-                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteTemplate(${id})">🗑️</button>
                         </div>
                         <label class="edit-label">Template Naam</label>
                         <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
@@ -1405,6 +1596,7 @@
         }
 
         function saveSettings() {
+            // Templates opslaan
             Object.keys(templates).forEach(id => {
                 const nameInput = document.getElementById(`template-name-${id}`);
                 
@@ -1421,36 +1613,12 @@
                         templates[id].openings.beugelplan = openingBeugelplan.value;
                     }
                     
-                    templates[1].sentences = [];
-                    for (let i = 0; i < 12; i++) {
-                        const sentenceInput = document.getElementById(`template1-sentence-${i}`);
-                        if (sentenceInput) {
-                            templates[1].sentences.push(sentenceInput.value);
-                        }
-                    }
-                    
                 } else if (id == 2) {
                     const contentInput = document.getElementById(`template-${id}`);
                     
                     if (nameInput && contentInput) {
                         templates[id].name = nameInput.value;
                         templates[id].content = contentInput.value;
-                    }
-                    
-                    templates[2].sentences = [];
-                    for (let i = 0; i < 16; i++) {
-                        const sentenceInput = document.getElementById(`template2-sentence-${i}`);
-                        if (sentenceInput) {
-                            templates[2].sentences.push(sentenceInput.value);
-                        }
-                    }
-                    
-                    templates[2].appointments = [];
-                    for (let i = 0; i < 3; i++) {
-                        const appointmentInput = document.getElementById(`template2-appointment-${i}`);
-                        if (appointmentInput) {
-                            templates[2].appointments.push(appointmentInput.value);
-                        }
                     }
                 } else {
                     const contentInput = document.getElementById(`template-${id}`);
@@ -1459,6 +1627,33 @@
                         templates[id].name = nameInput.value;
                         templates[id].content = contentInput.value;
                     }
+                }
+            });
+
+            // Zinnen opslaan (uit de zinnen tab)
+            // Template 1 zinnen
+            templates[1].sentences = [];
+            const template1SentenceInputs = document.querySelectorAll('[id^="template1-sentence-"]');
+            template1SentenceInputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    templates[1].sentences.push(input.value);
+                }
+            });
+
+            // Template 2 zinnen en afspraken
+            templates[2].sentences = [];
+            const template2SentenceInputs = document.querySelectorAll('[id^="template2-sentence-"]');
+            template2SentenceInputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    templates[2].sentences.push(input.value);
+                }
+            });
+
+            templates[2].appointments = [];
+            const template2AppointmentInputs = document.querySelectorAll('[id^="template2-appointment-"]');
+            template2AppointmentInputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    templates[2].appointments.push(input.value);
                 }
             });
 
@@ -1481,6 +1676,7 @@
                 saveData();
                 loadDropdownTemplates();
                 loadSettingsData();
+                loadSentencesEditData();
                 selectTemplate(1);
                 showSuccess('Reset naar standaard!');
             }
