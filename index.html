@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .app-container {
+            height: 100vh;
+            width: 100vw;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .settings-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 65px);
+        }
+
+        .template-section {
+            flex: 1;
+            padding: 20px;
+            background: var(--light);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .template-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .template-dropdown {
+            position: relative;
+        }
+
+        .template-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .template-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            border: 1px solid var(--border);
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .template-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--dark);
+        }
+
+        .btn-outline:hover {
+            background: var(--light);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .sentences-section {
+            width: 350px;
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            flex-shrink: 0;
+        }
+
+        .section-subtitle {
+            color: var(--gray);
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .sentences-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .sentence-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            cursor: grab;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .sentence-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .sentence-item:active {
+            cursor: grabbing;
+        }
+
+        .sentence-item.dragging {
+            opacity: 0.5;
+        }
+
+        .opening-choice-container {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .opening-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .opening-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .opening-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .text-container {
+            flex: 1;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            outline: none;
+            position: relative;
+            min-height: 0;
+        }
+
+        .text-container:empty:before {
+            content: attr(placeholder);
+            color: var(--gray);
+            pointer-events: none;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .text-container:focus {
+            border-color: var(--primary);
+        }
+
+        .drop-zone-indicator {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 10px;
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius);
+            padding: 10px;
+            text-align: center;
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .text-container.dragover .drop-zone-indicator {
+            display: block;
+        }
+
+        .placeholder-box {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 2px 8px;
+            cursor: text;
+            display: inline-block;
+            margin: 0 3px;
+            font-size: 14px;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+        
+        .placeholder-box:hover {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+        
+        .placeholder-input {
+            border: 1px solid #3b82f6;
+            background: white;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            min-width: 80px;
+            display: inline-block;
+            cursor: text;
+        }
+
+        .drop-indicator {
+            position: absolute;
+            border-left: 2px solid var(--primary);
+            height: 1.2em;
+            display: none;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .template-edit-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--light);
+        }
+
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .template-title {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+
+        .edit-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .edit-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 150px;
+            transition: var(--transition);
+        }
+
+        .edit-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .edit-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .edit-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-template-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .add-template-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .modal-actions {
+            padding: 20px 25px;
+            background: var(--light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #059669;
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 3000;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sentences-section {
+                width: 100%;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Email Template Editor</h1>
+            <button class="settings-btn" onclick="openSettings()">
+                ⚙️ Instellingen
+            </button>
+        </header>
+
+        <main class="main-content">
+            <section class="template-section">
+                <div class="template-controls">
+                    <div class="template-dropdown">
+                        <button class="template-btn" onclick="toggleDropdown()">
+                            📋 Templates ▼
+                        </button>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <!-- Templates worden hier dynamisch geladen -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-area">
+                    <div class="opening-choice-container" id="openingChoiceContainer">
+                        <button class="opening-btn" onclick="selectOpening('ouders')">
+                            Geachte ouders van [……..],
+                        </button>
+                        <button class="opening-btn" onclick="selectOpening('beugelplan')">
+                            Het beugelplan voor [……..] is:
+                        </button>
+                    </div>
+                    
+                    <div class="text-container" id="textContainer" contenteditable="true" placeholder="Selecteer een template of sleep voorbeeldzinnen hierheen...">
+                        <div class="drop-zone-indicator" id="dropZoneIndicator">
+                            📥 Sleep hier om onderaan toe te voegen
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="copyText()">
+                            📋 Tekst Kopiëren (met opmaak)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sentences-section">
+                <h2 class="section-title">Voorbeeldzinnen</h2>
+                <p class="section-subtitle">
+                    Sleep zinnen naar het tekstvak om ze toe te voegen
+                </p>
+                
+                <div class="sentences-container" id="sentencesContainer">
+                    <!-- Zinnen worden hier geladen -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Instellingen</h2>
+                <button class="close-btn" onclick="closeSettings()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('templates')">Templates</button>
+                    <button class="tab-btn" onclick="switchTab('sentences')">Voorbeeldzinnen</button>
+                </div>
+
+                <div id="templatesTab" class="tab-content active">
+                    <button class="add-template-btn" onclick="addNewTemplate()">
+                        ➕ Nieuwe Template Toevoegen
+                    </button>
+                    <div id="templatesEditContainer"></div>
+                </div>
+
+                <div id="sentencesTab" class="tab-content">
+                    <div id="sentencesEditContainer"></div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="resetToDefault()">
+                    🔄 Standaard Herstellen
+                </button>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    💾 Wijzigingen Opslaan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        Wijzigingen opgeslagen!
+    </div>
+
+    <script>
+        const defaultTemplates = {
+            1: { 
+                name: "Behandelplan ouders", 
+                content: "",
+                openings: {
+                    ouders: "Geachte ouders van [……..],",
+                    beugelplan: "Het beugelplan voor [……..] is:"
+                },
+                sentences: [
+                    "Het verwijderen van [aantal] kiezen",
+                    "Vaste apparatuur (slotjesbeugel) onder-, en bovenkaak",
+                    "Vaste apparatuur alleen in de bovenkaak (slotjesbeugel)",
+                    "Vaste apparatuus alleen in de onderkaak (slotjesbeugel)",
+                    "Cervical Headgear (buitenboordbeugel), 6-9 maanden",
+                    "Correctieveren 3M Forsus™",
+                    "Activatortherapie (9-12 maanden)",
+                    "Geschatte behandelduur […..] jaar",
+                    "Tevens zal na enkele maanden een nachtbeugel voor de bovenkaak gemaakt worden",
+                    "Nadat de beugel eruit is, zullen nog enkele controle-bezoeken gepland worden voor de nacontrole",
+                    "N.B. Diverse verzekeringen vergoeden niet het gehele bedrag! Het kan zijn dat u op enig moment niets meer vergoed krijgt. Wellicht verstandig om uw polisvoorwaarden te controleren zodat u niet voor verrassingen komt te staan.",
+                    "In de bijlage vindt u de begroting voor de beugel."
+                ]
+            },
+            2: { 
+                name: "Verslag eerste consult", 
+                content: "Geachte ouders van [……..],\n\nNaar aanleiding van het consultbezoek van [datum] constateerde ik:",
+                sentences: [
+                    "Onregelmatige stand boven-, en onderfront",
+                    "Onregelmatige stand onderfront",
+                    "Onregelmatige stand bovenfront",
+                    "Spacing boven,-en onderkaak",
+                    "Spacing bovenkaak en crowding onderkaak",
+                    "Diepe beet (ondertanden niet of nauwelijks zichtbaar), hierdoor meer kans op sijtage",
+                    "Onderkaak ligt terug t.o.v. de bovenkaak",
+                    "Verstandskiezen nog aanwezig",
+                    "Agenesie (genetisch niet aangelegd) van de {tand of kiezen]",
+                    "Kruisbeet links",
+                    "Kruisbeet rechts",
+                    "Omgekeerde overbeet (ondertanden staan voor de boventanden)",
+                    "Hypomineralisatie (glazuur is niet goed aangemaakt en daardoor verzwakt) van […..]",
+                    "Ruimtegebrek onder-, en bovenkaak",
+                    "Nog niet uitgewisseld, nog [….] te wisselen",
+                    "Indien een behandeling wenselijk is, zal dat waarschijnlijk met een vaste beugel (slotjes) zijn. De gemiddelde kosten variëren tussen de € 3000,- en € 3500,-"
+                ],
+                appointments: [
+                    "Verzamelen gegevens (scan van het gebit, twee röntgenfoto's) [datum]",
+                    "Behandelplan bespreken [datum]",
+                    "Beugel plaatsen [datum]"
+                ]
+            }
+        };
+
+        let templates, sentences, appointments;
+        let selectedOpening = null;
+        let currentTemplateId = null;
+        let draggedSentence = null;
+
+        function loadData() {
+            try {
+                const savedTemplates = localStorage.getItem('emailTemplates');
+                const savedSentences = localStorage.getItem('emailSentences');
+                const savedAppointments = localStorage.getItem('emailAppointments');
+                
+                templates = savedTemplates ? JSON.parse(savedTemplates) : {...defaultTemplates};
+                sentences = savedSentences ? JSON.parse(savedSentences) : [...defaultTemplates[1].sentences];
+                appointments = savedAppointments ? JSON.parse(savedAppointments) : [...defaultTemplates[2].appointments];
+                return true;
+            } catch (error) {
+                templates = {...defaultTemplates};
+                sentences = [...defaultTemplates[1].sentences];
+                appointments = [...defaultTemplates[2].appointments];
+                return false;
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('emailTemplates', JSON.stringify(templates));
+                localStorage.setItem('emailSentences', JSON.stringify(sentences));
+                localStorage.setItem('emailAppointments', JSON.stringify(appointments));
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function activatePlaceholder(element, autoSelect = false) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'placeholder-input';
+            input.value = '';
+            input.placeholder = element.textContent;
+            
+            element.parentNode.replaceChild(input, element);
+            
+            input.focus();
+            if (autoSelect) {
+                input.select();
+            }
+            
+            input.addEventListener('blur', function() {
+                finishTyping(input);
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    finishTyping(input);
+                }
+            });
+        }
+        
+        function activateDatumPlaceholder(element) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'placeholder-input';
+            input.value = '__/__/____';
+            input.placeholder = element.textContent;
+            
+            element.parentNode.replaceChild(input, element);
+            
+            input.focus();
+            input.select();
+            
+            let lastValue = '__/__/____';
+            input.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                
+                if (value.length <= 2) {
+                    value = value.padEnd(2, '_');
+                    this.value = value + '/__/____';
+                } else if (value.length <= 4) {
+                    const day = value.substring(0, 2);
+                    const month = value.substring(2, 4).padEnd(2, '_');
+                    this.value = day + '/' + month + '/____';
+                } else if (value.length <= 8) {
+                    const day = value.substring(0, 2);
+                    const month = value.substring(2, 4);
+                    const year = value.substring(4, 8).padEnd(4, '_');
+                    this.value = day + '/' + month + '/' + year;
+                } else {
+                    const day = value.substring(0, 2);
+                    const month = value.substring(2, 4);
+                    const year = value.substring(4, 8);
+                    this.value = day + '/' + month + '/' + year;
+                }
+                
+                const cursorPos = Math.min(value.length, 8);
+                let displayPos = cursorPos;
+                if (cursorPos > 2) displayPos++;
+                if (cursorPos > 4) displayPos++;
+                
+                setTimeout(() => {
+                    this.setSelectionRange(displayPos, displayPos);
+                }, 0);
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (this.value === '__/__/____' && 
+                    !e.key.includes('Arrow') && 
+                    e.key !== 'Shift' && 
+                    e.key !== 'Control' && 
+                    e.key !== 'Alt' && 
+                    e.key !== 'Meta' &&
+                    e.key !== 'Backspace' &&
+                    e.key !== 'Delete') {
+                    this.value = '';
+                    this.dispatchEvent(new Event('input'));
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                finishDatumTyping(input);
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    finishDatumTyping(input);
+                }
+            });
+        }
+        
+        function finishTyping(input) {
+            const newValue = input.value.trim();
+            const newSpan = document.createElement('span');
+            
+            if (newValue) {
+                newSpan.textContent = newValue;
+                newSpan.style.color = '#1e293b';
+                newSpan.style.display = 'inline';
+            } else {
+                newSpan.textContent = input.placeholder;
+                newSpan.className = 'placeholder-box';
+                if (input.placeholder === '[datum]') {
+                    newSpan.onclick = function() { activateDatumPlaceholder(this); };
+                } else {
+                    newSpan.onclick = function() { activatePlaceholder(this, true); };
+                }
+                newSpan.style.color = '#64748b';
+            }
+            
+            input.parentNode.replaceChild(newSpan, input);
+        }
+        
+        function finishDatumTyping(input) {
+            let newValue = input.value.trim();
+            const newSpan = document.createElement('span');
+            
+            if (newValue && newValue !== '__/__/____') {
+                newValue = newValue.replace(/_/g, '');
+                if (newValue.length === 8) {
+                    const day = newValue.substring(0, 2);
+                    const month = newValue.substring(2, 4);
+                    const year = newValue.substring(4, 8);
+                    newSpan.textContent = day + '/' + month + '/' + year;
+                } else {
+                    newSpan.textContent = newValue;
+                }
+                newSpan.style.color = '#1e293b';
+                newSpan.style.display = 'inline';
+            } else {
+                newSpan.textContent = '[datum]';
+                newSpan.className = 'placeholder-box';
+                newSpan.onclick = function() { activateDatumPlaceholder(this); };
+                newSpan.style.color = '#64748b';
+            }
+            
+            input.parentNode.replaceChild(newSpan, input);
+        }
+
+        function convertTextToClickableHTML(text) {
+            const placeholderRegex = /\[(?:[^\[\]]+|\.{2,})\]/g;
+            
+            return text.replace(/\n/g, '<br>').replace(placeholderRegex, function(match) {
+                if (match === '[datum]') {
+                    return `<span class="placeholder-box" onclick="activateDatumPlaceholder(this)">${match}</span>`;
+                } else {
+                    return `<span class="placeholder-box" onclick="activatePlaceholder(this, true)">${match}</span>`;
+                }
+            });
+        }
+
+        function convertHTMLToRichText(html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            const brs = tempDiv.getElementsByTagName('br');
+            for (let i = brs.length - 1; i >= 0; i--) {
+                const br = brs[i];
+                const parent = br.parentNode;
+                parent.replaceChild(document.createTextNode('\n'), br);
+            }
+            
+            const placeholders = tempDiv.getElementsByClassName('placeholder-box');
+            for (let i = placeholders.length - 1; i >= 0; i--) {
+                const placeholder = placeholders[i];
+                const parent = placeholder.parentNode;
+                parent.replaceChild(document.createTextNode(placeholder.textContent), placeholder);
+            }
+            
+            const inputs = tempDiv.getElementsByTagName('input');
+            for (let i = inputs.length - 1; i >= 0; i--) {
+                const input = inputs[i];
+                const parent = input.parentNode;
+                parent.replaceChild(document.createTextNode(input.value || input.placeholder), input);
+            }
+            
+            const spans = tempDiv.getElementsByTagName('span');
+            for (let i = spans.length - 1; i >= 0; i--) {
+                const span = spans[i];
+                const parent = span.parentNode;
+                parent.replaceChild(document.createTextNode(span.textContent), span);
+            }
+            
+            return tempDiv.textContent || tempDiv.innerText || '';
+        }
+
+        function copyText() {
+            const textContainer = document.getElementById('textContainer');
+            const richText = convertHTMLToRichText(textContainer.innerHTML);
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(richText).then(() => {
+                    showSuccess('Tekst gekopieerd (met alinea\'s)!');
+                }).catch(err => {
+                    console.error('Clipboard API error:', err);
+                    fallbackCopyText(richText);
+                });
+            } else {
+                fallbackCopyText(richText);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showSuccess('Tekst gekopieerd (met alinea\'s)!');
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                showSuccess('Kopiëren mislukt!');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+
+        function selectTemplate(id) {
+            const textContainer = document.getElementById('textContainer');
+            const container = document.getElementById('openingChoiceContainer');
+            
+            currentTemplateId = id;
+            
+            if (templates[id]) {
+                if (id == 1) {
+                    textContainer.innerHTML = '';
+                    container.style.display = 'flex';
+                    document.querySelectorAll('.opening-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    selectedOpening = null;
+                    loadSentencesForTemplate(id);
+                } else {
+                    textContainer.innerHTML = convertTextToClickableHTML(templates[id].content);
+                    container.style.display = 'none';
+                    loadSentencesForTemplate(id);
+                }
+            }
+            
+            document.getElementById('dropdownMenu').style.display = 'none';
+        }
+
+        function selectOpening(type) {
+            if (!templates[1].openings[type]) return;
+            
+            document.querySelectorAll('.opening-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            event.target.classList.add('selected');
+            
+            selectedOpening = type;
+            applySelectedOpening();
+        }
+
+        function applySelectedOpening() {
+            if (!selectedOpening) return;
+            
+            const textContainer = document.getElementById('textContainer');
+            const container = document.getElementById('openingChoiceContainer');
+            
+            if (templates[1].openings[selectedOpening]) {
+                textContainer.innerHTML = convertTextToClickableHTML(templates[1].openings[selectedOpening] + "\n\n");
+                
+                setTimeout(() => {
+                    container.style.display = 'none';
+                }, 500);
+            }
+            
+            textContainer.focus();
+        }
+
+        function loadSentencesForTemplate(templateId) {
+            const container = document.getElementById('sentencesContainer');
+            container.innerHTML = '';
+            
+            if (templates[templateId]) {
+                templates[templateId].sentences.forEach((sentence, index) => {
+                    const sentenceElement = document.createElement('div');
+                    sentenceElement.className = 'sentence-item';
+                    sentenceElement.draggable = true;
+                    sentenceElement.textContent = sentence;
+                    sentenceElement.setAttribute('data-index', index);
+                    sentenceElement.setAttribute('data-type', 'sentence');
+                    container.appendChild(sentenceElement);
+                });
+                
+                if (templateId == 2 && templates[2].appointments) {
+                    const separator = document.createElement('div');
+                    separator.style.padding = '10px 0 5px 0';
+                    separator.style.fontWeight = '500';
+                    separator.style.color = 'var(--gray)';
+                    separator.style.fontSize = '0.9rem';
+                    separator.textContent = 'Optionele afspraken:';
+                    container.appendChild(separator);
+                    
+                    templates[2].appointments.forEach((appointment, index) => {
+                        const appointmentElement = document.createElement('div');
+                        appointmentElement.className = 'sentence-item';
+                        appointmentElement.draggable = true;
+                        appointmentElement.textContent = appointment;
+                        appointmentElement.setAttribute('data-index', index);
+                        appointmentElement.setAttribute('data-type', 'appointment');
+                        container.appendChild(appointmentElement);
+                    });
+                }
+            }
+        }
+
+        function setupDragAndDrop() {
+            const textContainer = document.getElementById('textContainer');
+            
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.classList.contains('sentence-item')) {
+                    draggedSentence = e.target.textContent;
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.textContent);
+                    e.dataTransfer.effectAllowed = 'copy';
+                }
+            });
+
+            document.addEventListener('dragend', function(e) {
+                if (e.target.classList.contains('sentence-item')) {
+                    e.target.classList.remove('dragging');
+                    draggedSentence = null;
+                    textContainer.classList.remove('dragover');
+                }
+            });
+
+            textContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                textContainer.classList.add('dragover');
+            });
+
+            textContainer.addEventListener('dragleave', function(e) {
+                if (!textContainer.contains(e.relatedTarget)) {
+                    textContainer.classList.remove('dragover');
+                }
+            });
+
+            textContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                textContainer.classList.remove('dragover');
+                
+                if (!draggedSentence) return;
+                
+                const rect = textContainer.getBoundingClientRect();
+                const y = e.clientY - rect.top;
+                
+                const linePosition = getLinePositionFromMouse(y, rect.height, textContainer);
+                
+                insertSentenceAtLinePosition(textContainer, draggedSentence, linePosition);
+                
+                draggedSentence = null;
+            });
+        }
+
+        function getLinePositionFromMouse(mouseY, containerHeight, container) {
+            if (mouseY > containerHeight - 50) {
+                return 'append';
+            }
+            
+            const text = container.textContent || container.innerText;
+            const lines = text.split('\n');
+            const lineHeight = 24;
+            
+            const lineIndex = Math.floor(mouseY / lineHeight);
+            
+            return Math.min(lineIndex, lines.length - 1);
+        }
+
+        function insertSentenceAtLinePosition(container, sentenceText, linePosition) {
+            const clickableHTML = convertTextToClickableHTML(sentenceText);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = clickableHTML;
+            
+            if (linePosition === 'append') {
+                if (container.innerHTML && container.innerHTML.trim() !== '') {
+                    const br = document.createElement('br');
+                    container.appendChild(br);
+                }
+                
+                while (tempDiv.firstChild) {
+                    container.appendChild(tempDiv.firstChild);
+                }
+                
+                const br = document.createElement('br');
+                container.appendChild(br);
+            } else {
+                if (container.innerHTML && container.innerHTML.trim() !== '') {
+                    const br = document.createElement('br');
+                    container.appendChild(br);
+                }
+                
+                while (tempDiv.firstChild) {
+                    container.appendChild(tempDiv.firstChild);
+                }
+                
+                const br = document.createElement('br');
+                container.appendChild(br);
+            }
+            
+            container.scrollTop = container.scrollHeight;
+            container.focus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            loadDropdownTemplates();
+            setupDragAndDrop();
+            
+            selectTemplate(1);
+        });
+
+        function loadDropdownTemplates() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.innerHTML = '';
+            
+            Object.keys(templates).sort((a, b) => a - b).forEach(id => {
+                const template = templates[id];
+                const templateItem = document.createElement('div');
+                templateItem.className = 'dropdown-item';
+                templateItem.innerHTML = `<span>${template.name}</span>`;
+                templateItem.onclick = () => selectTemplate(id);
+                dropdown.appendChild(templateItem);
+            });
+        }
+
+        function addNewTemplate() {
+            const newId = Math.max(...Object.keys(templates).map(Number)) + 1;
+            if (newId > 20) {
+                alert('Maximum aantal templates (20) bereikt!');
+                return;
+            }
+            
+            templates[newId] = {
+                name: `Nieuwe Template ${newId}`,
+                content: 'Voeg hier je template inhoud toe...',
+                sentences: []
+            };
+            
+            loadSettingsData();
+            showSuccess('Nieuwe template toegevoegd!');
+        }
+
+        function deleteTemplate(id) {
+            if (Object.keys(templates).length <= 1) {
+                alert('Je moet minstens 1 template behouden!');
+                return;
+            }
+            
+            if (confirm(`Weet je zeker dat je template "${templates[id].name}" wilt verwijderen?`)) {
+                delete templates[id];
+                loadSettingsData();
+                loadDropdownTemplates();
+                
+                if (currentTemplateId == id) {
+                    selectTemplate(Object.keys(templates)[0]);
+                }
+                
+                showSuccess('Template verwijderd!');
+            }
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            loadSettingsData();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        function loadSettingsData() {
+            const templatesContainer = document.getElementById('templatesEditContainer');
+            templatesContainer.innerHTML = '';
+            
+            Object.keys(templates).sort((a, b) => a - b).forEach(id => {
+                const template = templates[id];
+                const templateDiv = document.createElement('div');
+                templateDiv.className = 'template-edit-item';
+                
+                let templateContent = '';
+                
+                if (id == 1) {
+                    templateContent = `
+                        <div class="template-header">
+                            <div class="template-title">Template ${id} - ${template.name}</div>
+                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                        </div>
+                        <label class="edit-label">Template Naam</label>
+                        <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
+                        
+                        <label class="edit-label">Opening 1 (ouders)</label>
+                        <input type="text" class="edit-input" id="template-opening-ouders-${id}" value="${template.openings.ouders}">
+                        
+                        <label class="edit-label">Opening 2 (beugelplan)</label>
+                        <input type="text" class="edit-input" id="template-opening-beugelplan-${id}" value="${template.openings.beugelplan}">
+                        
+                        <label class="edit-label">Voorbeeldzinnen Template 1</label>
+                        <div id="template1-sentences-container"></div>
+                    `;
+                    
+                    setTimeout(() => {
+                        const container = document.getElementById('template1-sentences-container');
+                        container.innerHTML = '';
+                        templates[1].sentences.forEach((sentence, index) => {
+                            const sentenceDiv = document.createElement('div');
+                            sentenceDiv.style.marginBottom = '10px';
+                            sentenceDiv.innerHTML = `
+                                <input type="text" class="edit-input" id="template1-sentence-${index}" value="${sentence}" style="margin-bottom: 5px;">
+                            `;
+                            container.appendChild(sentenceDiv);
+                        });
+                    }, 0);
+                    
+                } else if (id == 2) {
+                    templateContent = `
+                        <div class="template-header">
+                            <div class="template-title">Template ${id} - ${template.name}</div>
+                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                        </div>
+                        <label class="edit-label">Template Naam</label>
+                        <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
+                        <label class="edit-label">Template Inhoud</label>
+                        <textarea class="edit-textarea" id="template-${id}">${template.content}</textarea>
+                        
+                        <label class="edit-label">Voorbeeldzinnen Template 2</label>
+                        <div id="template2-sentences-container"></div>
+                        
+                        <label class="edit-label">Optionele Afspraken</label>
+                        <div id="template2-appointments-container"></div>
+                    `;
+                    
+                    setTimeout(() => {
+                        const sentencesContainer = document.getElementById('template2-sentences-container');
+                        sentencesContainer.innerHTML = '';
+                        templates[2].sentences.forEach((sentence, index) => {
+                            const sentenceDiv = document.createElement('div');
+                            sentenceDiv.style.marginBottom = '10px';
+                            sentenceDiv.innerHTML = `
+                                <input type="text" class="edit-input" id="template2-sentence-${index}" value="${sentence}" style="margin-bottom: 5px;">
+                            `;
+                            sentencesContainer.appendChild(sentenceDiv);
+                        });
+                        
+                        const appointmentsContainer = document.getElementById('template2-appointments-container');
+                        appointmentsContainer.innerHTML = '';
+                        templates[2].appointments.forEach((appointment, index) => {
+                            const appointmentDiv = document.createElement('div');
+                            appointmentDiv.style.marginBottom = '10px';
+                            appointmentDiv.innerHTML = `
+                                <input type="text" class="edit-input" id="template2-appointment-${index}" value="${appointment}" style="margin-bottom: 5px;">
+                            `;
+                            appointmentsContainer.appendChild(appointmentDiv);
+                        });
+                    }, 0);
+                } else {
+                    templateContent = `
+                        <div class="template-header">
+                            <div class="template-title">Template ${id} - ${template.name}</div>
+                            <button class="btn btn-danger" onclick="deleteTemplate(${id})">🗑️ Verwijderen</button>
+                        </div>
+                        <label class="edit-label">Template Naam</label>
+                        <input type="text" class="name-input" id="template-name-${id}" value="${template.name}" placeholder="Voer template naam in">
+                        <label class="edit-label">Template Inhoud</label>
+                        <textarea class="edit-textarea" id="template-${id}">${template.content}</textarea>
+                    `;
+                }
+                
+                templateDiv.innerHTML = templateContent;
+                templatesContainer.appendChild(templateDiv);
+            });
+        }
+
+        function saveSettings() {
+            Object.keys(templates).forEach(id => {
+                const nameInput = document.getElementById(`template-name-${id}`);
+                
+                if (id == 1) {
+                    if (nameInput) {
+                        templates[id].name = nameInput.value;
+                    }
+                    
+                    const openingOuders = document.getElementById(`template-opening-ouders-${id}`);
+                    const openingBeugelplan = document.getElementById(`template-opening-beugelplan-${id}`);
+                    
+                    if (openingOuders && openingBeugelplan) {
+                        templates[id].openings.ouders = openingOuders.value;
+                        templates[id].openings.beugelplan = openingBeugelplan.value;
+                    }
+                    
+                    templates[1].sentences = [];
+                    for (let i = 0; i < 12; i++) {
+                        const sentenceInput = document.getElementById(`template1-sentence-${i}`);
+                        if (sentenceInput) {
+                            templates[1].sentences.push(sentenceInput.value);
+                        }
+                    }
+                    
+                } else if (id == 2) {
+                    const contentInput = document.getElementById(`template-${id}`);
+                    
+                    if (nameInput && contentInput) {
+                        templates[id].name = nameInput.value;
+                        templates[id].content = contentInput.value;
+                    }
+                    
+                    templates[2].sentences = [];
+                    for (let i = 0; i < 16; i++) {
+                        const sentenceInput = document.getElementById(`template2-sentence-${i}`);
+                        if (sentenceInput) {
+                            templates[2].sentences.push(sentenceInput.value);
+                        }
+                    }
+                    
+                    templates[2].appointments = [];
+                    for (let i = 0; i < 3; i++) {
+                        const appointmentInput = document.getElementById(`template2-appointment-${i}`);
+                        if (appointmentInput) {
+                            templates[2].appointments.push(appointmentInput.value);
+                        }
+                    }
+                } else {
+                    const contentInput = document.getElementById(`template-${id}`);
+                    
+                    if (nameInput && contentInput) {
+                        templates[id].name = nameInput.value;
+                        templates[id].content = contentInput.value;
+                    }
+                }
+            });
+
+            const saved = saveData();
+            if (saved) {
+                loadDropdownTemplates();
+                if (currentTemplateId) {
+                    selectTemplate(currentTemplateId);
+                }
+                showSuccess('Wijzigingen opgeslagen!');
+                setTimeout(closeSettings, 1000);
+            } else {
+                showSuccess('Opslaan mislukt!');
+            }
+        }
+
+        function resetToDefault() {
+            if (confirm('Weet je zeker dat je alles wilt resetten naar standaard waarden?')) {
+                templates = { ...defaultTemplates };
+                saveData();
+                loadDropdownTemplates();
+                loadSettingsData();
+                selectTemplate(1);
+                showSuccess('Reset naar standaard!');
+            }
+        }
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.template-dropdown')) {
+                document.getElementById('dropdownMenu').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
